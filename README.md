@@ -14,7 +14,9 @@ This work is supported by the National Research Foundation (NRF) funded by the K
 
 ![image](https://github.com/user-attachments/assets/67c8db8f-cdfb-49f7-8040-625999afbbdc)
 
-Parameter count: 5.06M
+- Default Training Setup: MMSE loss, *Adam* optimizer with learning rate 5e-4
+- Default Hyperparameters: $C = 64$, $T = 500$, $D = 256$, $R = 994$, $S = 25$, $F = D / 4$<br/>
+- Total Parameter Count: 5.06M
 
 ### Results
 
