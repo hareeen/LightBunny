@@ -20,8 +20,8 @@ This work is supported by the National Research Foundation (NRF) funded by the K
 
 ### Results
 
-Spatial PCC: 0.85 ± 0.05<br/>
-Temporal PCC: 0.98 ± 0.03
+* Spatial PCC (time-averaged region activity): 0.85 ± 0.05<br/>
+* Temporal PCC (source region): 0.98 ± 0.03
 
 ![image](https://github.com/user-attachments/assets/a9050ef6-a0c2-4814-8064-1e476bddd121)
 
