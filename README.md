@@ -1,6 +1,6 @@
-# LightBunny: Deep Learning based Lightweight EEG Source Imaging
+# LightBunny: Lightweight Neural Network for EEG Source Imaging
 
-LightBunny is an EEG source imaging model aiming at providing an estimation of the location, size, and temporal activity of the brain activities from scalp EEG/MEG recordings.
+LightBunny is an EEG source imaging network aiming at providing an estimation of the location, size, and temporal activity of the brain activities from scalp EEG/MEG recordings.
 
 \[KOSOMBE 2024 Spring\] Suyoung Hwang, Jinseok Eo, Wooyong Lee, Hae-Jeong Park: "Electrophysical Source Imaging based on the Spatiotemporal Neural Network"
 
