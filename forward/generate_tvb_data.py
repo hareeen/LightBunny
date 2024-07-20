@@ -1,20 +1,21 @@
+import argparse
+import logging
+import multiprocessing as mp
+import os
+import time
+
+import numpy as np
 from scipy.io import savemat
 from tvb.simulator.lab import (
     connectivity,
-    set_loggers_level,
-    models,
-    noise,
-    simulator,
     coupling,
     integrators,
+    models,
     monitors,
+    noise,
+    set_loggers_level,
+    simulator,
 )
-import time
-import numpy as np
-import multiprocessing as mp
-import os
-import argparse
-import logging
 
 REGION_REMAPPING = {
     7: 994,
