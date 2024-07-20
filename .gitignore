@@ -1,0 +1,42 @@
+# Python specific
+*.pyc
+*.pyo
+__pycache__/
+
+# Virtual environments
+venv/
+env/
+env.bak/
+env1/
+env2/
+.python-version
+
+# IDE specific
+.idea/
+.vscode/
+
+# Compiled files
+*.pyd
+*.so
+*.dll
+
+# Logs and databases
+*.log
+*.sqlite3
+*.db
+
+# Miscellaneous
+.DS_Store
+Thumbs.db
+
+# Ignore raw data
+data
+source
+
+# Ignore model weights
+models
+
+# Ignore scratch files
+scratch.ipynb
+
+

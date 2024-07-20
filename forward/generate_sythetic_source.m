@@ -1,20 +1,21 @@
-clear
-train = 0;
+function generate_sythetic_source()
+
+train = 1;
 n_sources = 2;
 load('../anatomy/fs_cortex_20k_inflated.mat')
 load('../anatomy/fs_cortex_20k.mat')
 load('../anatomy/fs_cortex_20k_region_mapping.mat');
 load('../anatomy/dis_matrix_fs_20k.mat');
 % when load mat in python, python cannot read nan properly, so use a magic number to represent nan when saving
-NAN_NUMBER = 15213; 
+NAN_NUMBER = 15213;
 MAX_SIZE = 70;
 if train
-    nper = 100;                                                            % Number of nmm spike samples 
+    nper = 3;                                                            % Number of nmm spike samples
     n_data = 40;
     n_iter = 48;                                                           % The number of variations in each source center
     ds_type = 'train';
 else
-    nper = 10;
+    nper = 1;
     n_data = 1;
     n_iter = 3;
     ds_type = 'test';
@@ -22,7 +23,7 @@ end
 %% ========================================================================
 %=============== Generate Source Patch ====================================
 %% ======== Region Growing Get Candidate Source Regions ===================
-selected_region_all = cell(994, 1);                                          
+selected_region_all = cell(994, 1);
 for i=1:994
     % get source direction
     selected_region_all{i} = [];
@@ -32,7 +33,7 @@ for i=1:994
     all_nb{2} = find_nb_rg(nbs, all_nb{1}, [region_id, all_nb{1}]);        % second layer regions
     v0 = get_direction(centre(region_id, :),centre(all_nb{1}, :));         % direction between the center region and first layer neighbors
     angs = zeros(size(v0,1),1);
-    for k=1:size(v0,1)                                                     
+    for k=1:size(v0,1)
         CosTheta = max(min(dot(v0(1,:),v0(k,:)),1),-1);
         angs(k) = real(acosd(CosTheta));
     end
@@ -40,54 +41,54 @@ for i=1:994
     ind = ind(1:ceil(length(angs)/2));                                     % directions to grow the region
     % second layer neighbours
     for iter = 1:5
-    all_rg = cell(1,4);
-    for k=1:length(ind)
-        ii = ind(k); 
-        all_rg(1:2) = all_nb(1:2); 
-        v = get_direction(centre(region_id, :),centre(all_rg{1}(ii), :));
-        all_rg{2} = all_rg{2}(get_region_with_dir(v, centre(region_id, :), centre(all_rg{2}, :),1,0));
-        [add_rg, rm_rg] = smooth_region(nbs, [region_id,all_nb{1},all_rg{2}]);
-        final_r = setdiff([region_id, all_nb{1}, all_rg{2} add_rg],rm_rg, 'stable')-1;
-        selected_region_all{i} = [selected_region_all{i};final_r NAN_NUMBER*ones(1,MAX_SIZE-length(final_r))];
-    end
+        all_rg = cell(1,4);
+        for k=1:length(ind)
+            ii = ind(k);
+            all_rg(1:2) = all_nb(1:2);
+            v = get_direction(centre(region_id, :),centre(all_rg{1}(ii), :));
+            all_rg{2} = all_rg{2}(get_region_with_dir(v, centre(region_id, :), centre(all_rg{2}, :),1,0));
+            [add_rg, rm_rg] = smooth_region(nbs, [region_id,all_nb{1},all_rg{2}]);
+            final_r = setdiff([region_id, all_nb{1}, all_rg{2} add_rg],rm_rg, 'stable')-1;
+            selected_region_all{i} = [selected_region_all{i};final_r NAN_NUMBER*ones(1,MAX_SIZE-length(final_r))];
+        end
     end
     % third layer neighbours
     for iter = 1:5
-    all_rg = cell(1,4);
-    for k=1:length(ind)
-        ii = ind(k); 
-        all_rg(1:2) = all_nb(1:2); 
-        v = get_direction(centre(region_id, :),centre(all_rg{1}(ii), :));
-        all_rg{2} = all_rg{2}(get_region_with_dir(v, centre(region_id, :), centre(all_rg{2}, :),1,0.1));
-        all_rg{3} = find_nb_rg(nbs, all_rg{2}, [region_id, all_rg{1}, all_rg{2}]);  
-        all_rg{3} = all_rg{3}(get_region_with_dir(v, centre(region_id, :), centre(all_rg{3}, :),1,-0.15));
-        [add_rg, rm_rg] = smooth_region(nbs, [region_id,all_nb{1},all_rg{2},all_rg{3}]);
-        final_r = setdiff([region_id, all_nb{1}, all_rg{2} all_rg{3} add_rg],rm_rg, 'stable')-1;
-        selected_region_all{i} = [selected_region_all{i};final_r NAN_NUMBER*ones(1,MAX_SIZE-length(final_r))];
+        all_rg = cell(1,4);
+        for k=1:length(ind)
+            ii = ind(k);
+            all_rg(1:2) = all_nb(1:2);
+            v = get_direction(centre(region_id, :),centre(all_rg{1}(ii), :));
+            all_rg{2} = all_rg{2}(get_region_with_dir(v, centre(region_id, :), centre(all_rg{2}, :),1,0.1));
+            all_rg{3} = find_nb_rg(nbs, all_rg{2}, [region_id, all_rg{1}, all_rg{2}]);
+            all_rg{3} = all_rg{3}(get_region_with_dir(v, centre(region_id, :), centre(all_rg{3}, :),1,-0.15));
+            [add_rg, rm_rg] = smooth_region(nbs, [region_id,all_nb{1},all_rg{2},all_rg{3}]);
+            final_r = setdiff([region_id, all_nb{1}, all_rg{2} all_rg{3} add_rg],rm_rg, 'stable')-1;
+            selected_region_all{i} = [selected_region_all{i};final_r NAN_NUMBER*ones(1,MAX_SIZE-length(final_r))];
+        end
     end
-    end
-%     % fourth neighbours
-%     for iter = 1:5
-%     all_rg = cell(1,4);
-%     for k=1:length(ind)
-%         ii = ind(k); 
-%         all_rg(1:2) = all_nb(1:2); 
-%         v = get_direction(centre(region_id, :),centre(all_rg{1}(ii), :));
-%         all_rg{2} = all_rg{2}(get_region_with_dir(v, centre(region_id, :), centre(all_rg{2}, :),1,0.2));
-%         all_rg{3} = find_nb_rg(nbs, all_rg{2}, [region_id, all_rg{1}, all_rg{2}]);  
-%         all_rg{3} = all_rg{3}(get_region_with_dir(v, centre(region_id, :), centre(all_rg{3}, :),1,-0.1));
-%         all_rg{4} = find_nb_rg(nbs, all_rg{3}, [region_id, all_rg{1}, all_rg{2},  all_rg{3}]); 
-%         all_rg{4} = all_rg{4}(get_region_with_dir(v, centre(region_id, :), centre(all_rg{4}, :),1,-0.35));
-%         [add_rg, rm_rg] = smooth_region(nbs, [region_id,all_nb{1},all_nb{2},all_rg{3},all_rg{4}]);
-%         final_r = setdiff([region_id, all_nb{1}, all_nb{2}, all_rg{3},all_rg{4}, add_rg],rm_rg, 'stable')-1;
-%         if length(final_r) < 71
-%             selected_region_all{i} = [selected_region_all{i};final_r NAN_NUMBER*ones(1,MAX_SIZE-length(final_r))];
-%         end
-%     end
-%     end
+    %     % fourth neighbours
+    %     for iter = 1:5
+    %     all_rg = cell(1,4);
+    %     for k=1:length(ind)
+    %         ii = ind(k);
+    %         all_rg(1:2) = all_nb(1:2);
+    %         v = get_direction(centre(region_id, :),centre(all_rg{1}(ii), :));
+    %         all_rg{2} = all_rg{2}(get_region_with_dir(v, centre(region_id, :), centre(all_rg{2}, :),1,0.2));
+    %         all_rg{3} = find_nb_rg(nbs, all_rg{2}, [region_id, all_rg{1}, all_rg{2}]);
+    %         all_rg{3} = all_rg{3}(get_region_with_dir(v, centre(region_id, :), centre(all_rg{3}, :),1,-0.1));
+    %         all_rg{4} = find_nb_rg(nbs, all_rg{3}, [region_id, all_rg{1}, all_rg{2},  all_rg{3}]);
+    %         all_rg{4} = all_rg{4}(get_region_with_dir(v, centre(region_id, :), centre(all_rg{4}, :),1,-0.35));
+    %         [add_rg, rm_rg] = smooth_region(nbs, [region_id,all_nb{1},all_nb{2},all_rg{3},all_rg{4}]);
+    %         final_r = setdiff([region_id, all_nb{1}, all_nb{2}, all_rg{3},all_rg{4}, add_rg],rm_rg, 'stable')-1;
+    %         if length(final_r) < 71
+    %             selected_region_all{i} = [selected_region_all{i};final_r NAN_NUMBER*ones(1,MAX_SIZE-length(final_r))];
+    %         end
+    %     end
+    %     end
 end
 %% ======== Get Region Center for Each Sample =============================
-selected_region = NAN_NUMBER*ones(994*n_iter, n_sources, MAX_SIZE); 
+selected_region = NAN_NUMBER*ones(994*n_iter, n_sources, MAX_SIZE);
 n_iter_list = nan(n_iter*(n_sources-1), 994);
 for i = 1:n_iter
     for k=1:(n_sources-1)
@@ -118,42 +119,45 @@ selected_region = reshape(repmat(selected_region, 4, 1, 1), MAX_SIZE, n_sources,
 selected_region = permute(selected_region,[3,2,1]);
 %% SAVE
 dataset_name = 'source1';
-save(['../source/' ds_type '_sample_' dataset_name '.mat'], 'selected_region')
+save(['../source/' ds_type '_sample_' dataset_name '.mat'], 'selected_region');
 %% ========================================================================
 %=============== Generate Other Parameters=================================
 %% NMM Signal Waveform
-random_samples = randi([1,nper],994*n_iter*4,n_sources);                 % the waveform index for each source
-nmm_idx = (selected_region(:,:,1)+1)*nper + random_samples + 1; 
-save(['../source/' ds_type '_sample_' dataset_name '.mat'],'nmm_idx', 'random_samples',  '-append')
-%% SNR
-current_snr = reshape(repmat(5:5:20,n_iter*994,1)',[],1); 
-save(['../source/' ds_type '_sample_' dataset_name '.mat'],'current_snr', '-append')
-%% Scaling Factor
+% random_samples = randi([1,nper],994*n_iter*4,n_sources);                 % the waveform index for each source
+% nmm_idx = (selected_region(:,:,1)+1)*nper + random_samples + 1;
+% save(['../source/' ds_type '_sample_' dataset_name '.mat'],'nmm_idx', 'random_samples',  '-append');
+% %% SNR
+% current_snr = reshape(repmat(5:5:20,n_iter*994,1)',[],1);
+% save(['../source/' ds_type '_sample_' dataset_name '.mat'],'current_snr', '-append');
+% %% Scaling Factor
 load('../anatomy/leadfield_75_20k.mat');
 gt = load(['../source/' ds_type '_sample_' dataset_name '.mat']);
-scale_ratio = [];
-n_source = size(gt.selected_region, 2);
-for i=1:size(gt.selected_region, 1)
-    for k=1:n_source
-        a = gt.selected_region(i,k,:);
-        a = a(:);
-        a(a>1000) = [];
-        if train
-            scale_ratio(i,k,:) = find_alpha(a+1, random_samples(i, k), fwd, 10:2:20);
-            
-        else
-            scale_ratio(i,k,:) = find_alpha(a+1, random_samples(i, k), fwd, [10,15]);
-        end
-    end
-end
-save(['../source/' ds_type '_sample_' dataset_name '.mat'], 'scale_ratio', '-append')
-%% Change Source Magnitude 
+% scale_ratio = [];
+% n_source = size(gt.selected_region, 2);
+% for i=1:size(gt.selected_region, 1)
+%     fprintf("A %d / %d\n", [i, size(gt.selected_region, 1)]);
+%     for k=1:n_source
+%         a = gt.selected_region(i,k,:);
+%         a = a(:);
+%         a(a>1000) = [];
+
+%         if train
+%             scale_ratio(i,k,:) = find_alpha(a+1, random_samples(i, k), fwd, 10:2:20);
+
+%         else
+%             scale_ratio(i,k,:) = find_alpha(a+1, random_samples(i, k), fwd, [10,15]);
+%         end
+%     end
+% end
+% save(['../source/' ds_type '_sample_' dataset_name '.mat'], 'scale_ratio', '-append');
+%% Change Source Magnitude
 clear mag_change
 point_05 = [40, 60];  % 45,35                                               % Magnitude falls to half of the centre region
 point_05 = randi(point_05);
 sigma = 0.8493*point_05;
 mag_change = [];
 for i=1:size(gt.selected_region,1)
+    fprintf("B %d / %d\n", [i, size(gt.selected_region, 1)]);
     for k=1:n_sources
         rg = gt.selected_region(i,k,:);
         rg(rg>1000) = [];
@@ -162,6 +166,8 @@ for i=1:size(gt.selected_region,1)
     end
 end
 save(['../source/' ds_type '_sample_' dataset_name '.mat'], 'mag_change', '-append')
+
+end
 %%
 function alpha = find_alpha(region_id, nmm_idx, fwd, target_SNR)
 % Re-scaling NMM channels in source channels
@@ -173,13 +179,16 @@ function alpha = find_alpha(region_id, nmm_idx, fwd, target_SNR)
 %     - target_SNR : set snr between signal and the background activity.
 % OUTPUTS:
 %     - alpha      : the scaling factor for one patch source
-
-load(['../source/nmm_spikes/a' int2str(region_id(1)-1) '/nmm_' int2str(nmm_idx) '.mat'])
-spike_shape = data(:,region_id(1))/max(data(:,region_id(1)));
-[~, peak_time] = max(spike_shape);
-data(:, region_id) = repmat(spike_shape,1,length(region_id));
-[Ps, Pn, ~] = calcualate_SNR(data, fwd, region_id, max(peak_time-50,0):max(peak_time+50,500));
-alpha = sqrt(10.^(target_SNR./10).*Pn./Ps);
+try
+    load(['../source/nmm_spikes/a' int2str(region_id(1)-1) '/nmm_' int2str(nmm_idx) '.mat'])
+    spike_shape = data(:,region_id(1))/max(data(:,region_id(1)));
+    [~, peak_time] = max(spike_shape);
+    data(:, region_id) = repmat(spike_shape,1,length(region_id));
+    [Ps, Pn, ~] = calcualate_SNR(data, fwd, region_id, max(peak_time-50,1):min(peak_time+50,500));
+    alpha = sqrt(10.^(target_SNR./10).*Pn./Ps);
+catch
+    alpha = sqrt(10.^(target_SNR./10).*10);
+end
 end
 
 
@@ -196,16 +205,16 @@ function [Ps, Pn, cur_snr] = calcualate_SNR(nmm, fwd, region_id, spike_ind)
 %     - Pn         : noise power
 %     - cur_snr    : current SNR in dB
 
-    sig_eeg = (fwd(:, region_id)*nmm(:, region_id)')';   % time * channel
-    sig_eeg_rm = sig_eeg - mean(sig_eeg, 1);
-    dd = 1:size(nmm,2);
-    dd(region_id) = [];
-    noise_eeg = (fwd(:,dd)*nmm(:,dd)')';
-    noise_eeg_rm = noise_eeg - mean(noise_eeg, 1);
+sig_eeg = (fwd(:, region_id)*nmm(:, region_id)')';   % time * channel
+sig_eeg_rm = sig_eeg - mean(sig_eeg, 1);
+dd = 1:size(nmm,2);
+dd(region_id) = [];
+noise_eeg = (fwd(:,dd)*nmm(:,dd)')';
+noise_eeg_rm = noise_eeg - mean(noise_eeg, 1);
 
-    Ps = norm(sig_eeg_rm(spike_ind,:),'fro')^2/length(spike_ind);
-    Pn = norm(noise_eeg_rm(spike_ind,:),'fro')^2/length(spike_ind);
-    cur_snr = 10*log10(Ps/Pn);
+Ps = norm(sig_eeg_rm(spike_ind,:),'fro')^2/length(spike_ind);
+Pn = norm(noise_eeg_rm(spike_ind,:),'fro')^2/length(spike_ind);
+cur_snr = 10*log10(Ps/Pn);
 end
 
 
@@ -224,8 +233,8 @@ function rg = find_nb_rg(nbs, centre_rg, prev_layers)
 % Find the neighbouring regions of the centre region
 % INPUTS:
 %     - nbs           : neighbour regions for each cortical region; 1*994
-%     - centre_rg     : centre regions 
-%     - prev_layers   : regions in inner layers 
+%     - centre_rg     : centre regions
+%     - prev_layers   : regions in inner layers
 % OUTPUTS:
 %     - rg            : neighbouring regions
 rg = unique(cell2mat(nbs(centre_rg)));
@@ -237,18 +246,18 @@ function [selected_rg] = get_region_with_dir(v, region_centre, nb_points, ratio,
 % Select region given the region growing direction
 % INPUTS:
 %     - v             : region growing direction
-%     - region_centre : centre region in 3D 
-%     - nb_points     : neighbour region in 3D 
+%     - region_centre : centre region in 3D
+%     - nb_points     : neighbour region in 3D
 %     - ratio, bias   : adjust the probability of selecting neighbour
 %                       regions (numbers decided by trial and error)
 % OUTPUTS:
 %     - selected_rg   : selected neighbouring regions
 
-    v2 = get_direction(region_centre, nb_points);                          % direction between center region and neighbour regions
-    dir_range = abs(v2*v');                                                % dot product between region growing direction and all neighbouring directions
-    dir_range = ratio*((dir_range-min(dir_range))/(max(dir_range) - min(dir_range))) + bias;  % the probability of selecting neighbour regions
+v2 = get_direction(region_centre, nb_points);                          % direction between center region and neighbour regions
+dir_range = abs(v2*v');                                                % dot product between region growing direction and all neighbouring directions
+dir_range = ratio*((dir_range-min(dir_range))/(max(dir_range) - min(dir_range))) + bias;  % the probability of selecting neighbour regions
 %     dir_range = 0.5                                                      % Equal probability for all directions
-    selected_rg = rand(length(dir_range),1) < dir_range;
+selected_rg = rand(length(dir_range),1) < dir_range;
 end
 
 
@@ -260,25 +269,25 @@ function [add_rg, rm_rg] = smooth_region(nbs, current_regions)
 % remove the regions where no neighbours is in current source patch;
 % INPUTS:
 %     - nbs             : neighbour regions for each cortical region; 1*994
-%     - current_regions : selected regions 
+%     - current_regions : selected regions
 % OUTPUTS:
 %     - selected_rg   : selected neighbouring regions
-    add_rg = [];
-    rm_rg = [];
-    all_final_nb = find_nb_rg(nbs, current_regions, []); 
-    all_final_nb = setdiff(all_final_nb, current_regions);
-    for i=1:length(all_final_nb)
-        current_rg = all_final_nb(i);
-        if length(intersect(current_regions, nbs{current_rg})) > length(nbs{current_rg})-2
-            add_rg = [add_rg current_rg];
-        end
+add_rg = [];
+rm_rg = [];
+all_final_nb = find_nb_rg(nbs, current_regions, []);
+all_final_nb = setdiff(all_final_nb, current_regions);
+for i=1:length(all_final_nb)
+    current_rg = all_final_nb(i);
+    if length(intersect(current_regions, nbs{current_rg})) > length(nbs{current_rg})-2
+        add_rg = [add_rg current_rg];
     end
-    for i=1:length(current_regions)
-        current_rg = current_regions(i);
-        if length(intersect([current_regions,add_rg], nbs{current_rg})) == 1
-            rm_rg = [rm_rg current_rg];
-        end
+end
+for i=1:length(current_regions)
+    current_rg = current_regions(i);
+    if length(intersect([current_regions,add_rg], nbs{current_rg})) == 1
+        rm_rg = [rm_rg current_rg];
     end
+end
 end
 
 
