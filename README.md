@@ -57,8 +57,8 @@ cd forward
 ./simulate.sh 0 994
 ```
 
-`forward/simulate.sh` runs the simulation for regions within provided region range; divide the regions into groups of 16 and perform them in parallel
-Since raw NMM simulation results are very large; the script post-processes the results at the end of each group's simulation.
+`forward/simulate.sh` runs the simulation for regions within provided region range; divide the regions into groups of 16 and perform them in parallel.<br/>
+Since raw NMM simulation results are very large; the script post-processes the results at the end of each group's simulation.<br/>
 During post-processing, the script automatically runs MATLAB in batch mode.
 
 ### Prepare Training/Testing Dataset
