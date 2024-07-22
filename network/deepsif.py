@@ -40,7 +40,7 @@ class ResidualLinearBlock(nn.Module):
         return out
 
 
-class Baseline(nn.Module):
+class DeepSIF(nn.Module):
     def __init__(
         self,
         num_sensor: int,
